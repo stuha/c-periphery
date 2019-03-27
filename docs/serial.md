@@ -19,6 +19,7 @@ int serial_flush(serial_t *serial);
 int serial_input_waiting(serial_t *serial, unsigned int *count);
 int serial_output_waiting(serial_t *serial, unsigned int *count);
 int serial_poll(serial_t *serial, int timeout_ms);
+int serial_epoll(serial_t *serial, int timeout_ms);
 int serial_close(serial_t *serial);
 
 /* Getters */
@@ -139,6 +140,17 @@ Returns 0 on success, or a negative [Serial error code](#return-value) on failur
 bool serial_poll(serial_t *serial, int timeout_ms);
 ```
 Poll for data available for reading from the serial port.
+
+`serial` should be a valid pointer to a Serial handle opened with `serial_open()` or `serial_open_advanced()`. `timeout_ms` can be positive for a timeout in milliseconds, 0 for a non-blocking poll, or a negative number for a blocking poll.
+
+Returns 1 on success (data available for reading), 0 on timeout, or a negative [Serial error code](#return-value) on failure.
+
+------
+
+``` c
+bool serial_epoll(serial_t *serial, int timeout_ms);
+```
+Epoll for data available for reading from the serial port.
 
 `serial` should be a valid pointer to a Serial handle opened with `serial_open()` or `serial_open_advanced()`. `timeout_ms` can be positive for a timeout in milliseconds, 0 for a non-blocking poll, or a negative number for a blocking poll.
 

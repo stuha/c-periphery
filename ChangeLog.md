@@ -1,3 +1,8 @@
+* v1.2.0 - 03/27/2019
+    * Add epoll support
+    * move header files to include directory
+    * Add dynamic library
+
 * v1.1.3 - 04/28/2018
     * Fix data's most significant bit getting stripped when opening a serial
       port with parity enabled in `serial_open_advanced()`.

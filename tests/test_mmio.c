@@ -11,7 +11,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "../src/mmio.h"
+#include "../include/mmio.h"
 
 #define PAGE_SIZE               4096
 

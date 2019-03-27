@@ -56,6 +56,9 @@ int gpio_open(gpio_t *gpio, unsigned int pin, gpio_direction_t direction);
 int gpio_read(gpio_t *gpio, bool *value);
 int gpio_write(gpio_t *gpio, bool value);
 int gpio_poll(gpio_t *gpio, int timeout_ms);
+#ifdef __linux__
+int gpio_epoll(gpio_t *gpio, int timeout_ms);
+#endif
 int gpio_close(gpio_t *gpio);
 
 /* Getters */

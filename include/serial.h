@@ -51,6 +51,9 @@ int serial_flush(serial_t *serial);
 int serial_input_waiting(serial_t *serial, unsigned int *count);
 int serial_output_waiting(serial_t *serial, unsigned int *count);
 int serial_poll(serial_t *serial, int timeout_ms);
+#ifdef __linux__
+int serial_epoll(serial_t *serial, int timeout_ms);
+#endif
 int serial_close(serial_t *serial);
 
 /* Getters */

@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "../src/i2c.h"
+#include "../include/i2c.h"
 
 const char *i2c_bus_path;
 uint8_t eeprom_address;

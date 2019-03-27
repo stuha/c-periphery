@@ -12,6 +12,7 @@ int gpio_open(gpio_t *gpio, unsigned int pin, gpio_direction_t direction);
 int gpio_read(gpio_t *gpio, bool *value);
 int gpio_write(gpio_t *gpio, bool value);
 int gpio_poll(gpio_t *gpio, int timeout_ms);
+int gpio_epoll(gpio_t *gpio, int timeout_ms);
 int gpio_close(gpio_t *gpio);
 
 /* Getters */
@@ -87,6 +88,17 @@ Returns 0 on success, or a negative [GPIO error code](#return-value) on failure.
 int gpio_poll(gpio_t *gpio, int timeout_ms);
 ```
 Poll a GPIO for the edge event configured with `gpio_set_edge`.
+
+`gpio` should be a valid pointer to a GPIO handle opened with `gpio_open()`. `timeout_ms` can be positive for a timeout in milliseconds, 0 for a non-blocking poll, or a negative number for a blocking poll.
+
+Returns 1 on success (an edge event occurred), 0 on timeout, or a negative [GPIO error code](#return-value) on failure.
+
+------
+
+``` c
+int gpio_epoll(gpio_t *gpio, int timeout_ms);
+```
+Epoll a GPIO for the edge event configured with `gpio_set_edge`.
 
 `gpio` should be a valid pointer to a GPIO handle opened with `gpio_open()`. `timeout_ms` can be positive for a timeout in milliseconds, 0 for a non-blocking poll, or a negative number for a blocking poll.
 

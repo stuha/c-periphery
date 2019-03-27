@@ -14,6 +14,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
+#ifdef __linux__
+#include <sys/epoll.h>
+#endif
 #include <sys/stat.h>
 #include <errno.h>
 
@@ -203,6 +206,52 @@ int gpio_poll(gpio_t *gpio, int timeout_ms) {
     /* Timed out */
     return 0;
 }
+
+#ifdef __linux__
+#include <sys/epoll.h>
+int gpio_epoll(gpio_t *gpio, int timeout_ms) {
+	char buf[1];
+	int maxevents = 1;
+	struct epoll_event event, events[maxevents];
+	int epoll_fd = epoll_create1(0);
+	int ret;
+
+	/* Dummy read before poll */
+	if (read(gpio->fd, buf, 1) < 0)
+		return _gpio_error(gpio, GPIO_ERROR_IO, errno, "Reading GPIO 'value'");
+
+	/* Seek to end */
+	if (lseek(gpio->fd, 0, SEEK_END) < 0)
+		return _gpio_error(gpio, GPIO_ERROR_IO, errno, "Seeking to end of GPIO 'value'");
+
+	if (epoll_fd == -1)
+		return _gpio_error(gpio, GPIO_ERROR_IO, errno,
+				"Create event poll");
+	event.events = EPOLLIN | EPOLLPRI;
+	event.data.fd = gpio->fd;
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, gpio->fd, &event)) {
+		close(epoll_fd);
+		return _gpio_error(gpio, GPIO_ERROR_IO, errno, "Add event poll");;
+	}
+	if ((ret = epoll_wait(epoll_fd, events, 1, timeout_ms)) < 0) {
+		close(epoll_fd);
+		return _gpio_error(gpio, GPIO_ERROR_IO, errno, "Epolling gpio port");
+	}
+
+	close(epoll_fd);
+	/* gpio event reported */
+	if (ret) {
+		/* Rewind */
+		if (lseek(gpio->fd, 0, SEEK_SET) < 0)
+			return _gpio_error(gpio, GPIO_ERROR_IO, errno, "Rewinding GPIO 'value'");
+
+		return 1;
+	}
+
+	/* Timed out */
+	return 0;
+}
+#endif
 
 int gpio_set_direction(gpio_t *gpio, gpio_direction_t direction) {
     char gpio_path[P_PATH_MAX];

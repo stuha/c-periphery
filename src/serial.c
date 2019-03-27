@@ -16,6 +16,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
+#ifdef __linux__
+#include <sys/epoll.h>
+#endif
 
 #include <sys/select.h>
 #include <sys/ioctl.h>
@@ -296,6 +299,37 @@ int serial_poll(serial_t *serial, int timeout_ms) {
     /* Timed out */
     return 0;
 }
+
+#ifdef __linux__
+int serial_epoll(serial_t *serial, int timeout_ms) {
+	int maxevents = 1;
+	struct epoll_event event, events[maxevents];
+	int epoll_fd = epoll_create1(0);
+	int ret;
+
+	if (epoll_fd == -1)
+		return _serial_error(serial, SERIAL_ERROR_IO, errno,
+				"Create event poll");
+	event.events = EPOLLIN | EPOLLPRI;
+	event.data.fd = serial->fd;
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serial->fd, &event)) {
+		close(epoll_fd);
+		return _serial_error(serial, SERIAL_ERROR_IO, errno, "Add event poll");;
+	}
+	if ((ret = epoll_wait(epoll_fd, events, 1, timeout_ms)) < 0) {
+		close(epoll_fd);
+		return _serial_error(serial, SERIAL_ERROR_IO, errno, "Epolling serial port");
+	}
+
+	close(epoll_fd);
+	/* serial event reported */
+	if (ret)
+		return 1;
+
+	/* Timed out */
+	return 0;
+}
+#endif
 
 int serial_close(serial_t *serial) {
     if (serial->fd < 0)

@@ -12,7 +12,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "../src/gpio.h"
+#include "../include/gpio.h"
 
 unsigned int pin_input, pin_output;
 
